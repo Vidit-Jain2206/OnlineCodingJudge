@@ -3,10 +3,11 @@ import { SubmissionRepositoryImp } from "./repository/SubmissionRepositoryImp";
 import { SubmissionService } from "./service/SubmissionService";
 import { SubmissionController } from "./controllers/SubmissionController";
 import express from "express";
+import { db } from "./config/database.config";
 
 dotenv.config();
 
-const submissionRepository = new SubmissionRepositoryImp();
+const submissionRepository = new SubmissionRepositoryImp(db);
 const submissionService = new SubmissionService(submissionRepository);
 const submissionController = new SubmissionController(submissionService);
 

@@ -1,37 +1,58 @@
-import { dbPool } from "../config/database.config";
-import { Submission } from "../entity/Submission";
+import { eq } from "drizzle-orm";
+import { MySql2Database } from "drizzle-orm/mysql2";
+import * as schema from "../database/schema";
 import { ISubmissionRepository } from "./ISubmissionRepository";
+import { Submission, SubmissionStatus } from "../entity/Submission";
+import { submissions } from "../database/schema";
 
 export class SubmissionRepositoryImp implements ISubmissionRepository {
-  constructor() {}
+  constructor(private db: MySql2Database<typeof schema>) {}
+
   async getSubmissionById(id: string): Promise<Submission | null> {
-    const query = `SELECT * FROM submissions WHERE id = $1`;
-    const result = await dbPool.query(query, [id]);
-    return result.rows[0] || null;
+    const result = await this.db
+      .select()
+      .from(submissions)
+      .where(eq(submissions.id, id))
+      .limit(1);
+
+    if (result.length === 0) {
+      return null;
+    }
+
+    const row = result[0];
+    const newSub = new Submission(
+      row.id,
+      row.sourceCode,
+      row.language,
+      row.expectedOutput
+    );
+    newSub.setStatus(row.status as SubmissionStatus);
+    newSub.setStdOutput(row.output || "");
+    return newSub;
   }
 
   async updateSubmission(submission: Submission): Promise<Submission> {
-    const query = `UPDATE submissions SET status = $1, output = $2, updated_at = $2 WHERE id = $3 RETURNING *`;
-    const result = await dbPool.query(query, [
-      submission.getStatus(),
-      submission.getStdOutput(),
-      submission.getUpdatedAt(),
-      submission.getId(),
-    ]);
-    return result.rows[0];
+    const result = await this.db
+      .update(submissions)
+      .set({
+        status: submission.getStatus(),
+        output: submission.getStdOutput(),
+      })
+      .where(eq(submissions.id, submission.getId()));
+
+    return submission;
   }
 
   async saveSubmission(submission: Submission): Promise<Submission> {
-    const query = `INSERT INTO submissions ( id, source_code, language, expected_output, status, created_at ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`;
-    const result = await dbPool.query(query, [
-      submission.getId(),
-      submission.getCode(),
-      submission.getLanguage(),
-      submission.getExpectedOutput(),
-      submission.getStatus(),
-      submission.getCreatedAt(),
-    ]);
+    const result = await this.db.insert(submissions).values({
+      id: submission.getId(),
+      sourceCode: submission.getCode(),
+      language: submission.getLanguage(),
+      expectedOutput: submission.getExpectedOutput(),
+      status: submission.getStatus(),
+      createdAt: submission.getCreatedAt(),
+    });
 
-    return result.rows[0];
+    return submission;
   }
 }

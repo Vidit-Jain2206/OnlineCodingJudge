@@ -7,11 +7,10 @@ import {
   UpdateSubmissionDto,
 } from "../dtos/SubmissionDto";
 import { Submission } from "../entity/Submission";
+import { db } from "../config/database.config";
 
 export class SubmissionService {
-  constructor(private submissionRepository: ISubmissionRepository) {
-    this.submissionRepository = new SubmissionRepositoryImp();
-  }
+  constructor(private submissionRepository: ISubmissionRepository) {}
 
   async createSubmission(
     submissionDto: CreateSubmissionDto
