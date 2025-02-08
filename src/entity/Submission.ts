@@ -73,6 +73,14 @@ export class Submission {
   setStatus(status: SubmissionStatus) {
     this.status = status;
   }
+
+  setUpdatedAt(updatedAt: Date) {
+    this.updatedAt = updatedAt;
+  }
+
+  setCreatedAt(createdAt: Date) {
+    this.createdAt = createdAt;
+  }
 }
 
 export enum SubmissionStatus {

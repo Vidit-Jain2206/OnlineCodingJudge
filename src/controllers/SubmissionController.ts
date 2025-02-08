@@ -27,6 +27,9 @@ export class SubmissionController {
         language: submissionDto.language,
         expectedOutput: submissionDto.expectedOutput,
       });
+      if (!submission) {
+        throw new Error("Failed to create submission");
+      }
       res.status(201).json(submission);
       return;
     } catch (error) {
@@ -47,6 +50,9 @@ export class SubmissionController {
       const submission = await this.submissionService.getSubmissionById(
         submissionId
       );
+      if (!submission) {
+        throw new Error("Submission not found");
+      }
       res.status(200).json(submission);
       return;
     } catch (error) {

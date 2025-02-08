@@ -9,50 +9,51 @@ export class SubmissionRepositoryImp implements ISubmissionRepository {
   constructor(private db: MySql2Database<typeof schema>) {}
 
   async getSubmissionById(id: string): Promise<Submission | null> {
-    const result = await this.db
-      .select()
-      .from(submissions)
-      .where(eq(submissions.id, id))
-      .limit(1);
+    try {
+      const result = await this.db
+        .select()
+        .from(submissions)
+        .where(eq(submissions.id, id))
+        .limit(1);
 
-    if (result.length === 0) {
-      return null;
+      if (result.length === 0) {
+        return null;
+      }
+
+      const row = result[0];
+      const newSub = new Submission(
+        row.id,
+        row.sourceCode,
+        row.language,
+        row.expectedOutput
+      );
+      newSub.setStatus(row.status as SubmissionStatus);
+      newSub.setCreatedAt(row.createdAt || new Date());
+      newSub.setUpdatedAt(row.updatedAt || new Date());
+      newSub.setResult(row.result || "");
+      newSub.setStdOutput(row.stdOutput || "");
+      return newSub;
+    } catch (error) {
+      throw new Error("Failed to get submission");
     }
-
-    const row = result[0];
-    const newSub = new Submission(
-      row.id,
-      row.sourceCode,
-      row.language,
-      row.expectedOutput
-    );
-    newSub.setStatus(row.status as SubmissionStatus);
-    newSub.setStdOutput(row.output || "");
-    return newSub;
-  }
-
-  async updateSubmission(submission: Submission): Promise<Submission> {
-    const result = await this.db
-      .update(submissions)
-      .set({
-        status: submission.getStatus(),
-        output: submission.getStdOutput(),
-      })
-      .where(eq(submissions.id, submission.getId()));
-
-    return submission;
   }
 
   async saveSubmission(submission: Submission): Promise<Submission> {
-    const result = await this.db.insert(submissions).values({
-      id: submission.getId(),
-      sourceCode: submission.getCode(),
-      language: submission.getLanguage(),
-      expectedOutput: submission.getExpectedOutput(),
-      status: submission.getStatus(),
-      createdAt: submission.getCreatedAt(),
-    });
-
-    return submission;
+    try {
+      const result = await this.db.insert(submissions).values({
+        id: submission.getId(),
+        sourceCode: submission.getCode(),
+        language: submission.getLanguage(),
+        expectedOutput: submission.getExpectedOutput(),
+        status: submission.getStatus(),
+        stdOutput: submission.getStdOutput(),
+        result: submission.getResult(),
+        createdAt: submission.getCreatedAt(),
+        updatedAt: submission.getUpdatedAt(),
+      });
+      return submission;
+    } catch (error) {
+      throw new Error("Failed to create submission");
+    }
   }
 }

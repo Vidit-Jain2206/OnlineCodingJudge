@@ -12,9 +12,10 @@ export const submissions = mysqlTable("submissions", {
   language: varchar("language", { length: 50 }).notNull(),
   expectedOutput: text("expected_output").notNull(),
   status: varchar("status", { length: 20 }).notNull().default("pending"),
-  output: text("output"),
-  executionTime: int("execution_time"),
+  stdOutput: text("std_output"),
+  result: text("result"), // wrong or correct
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export type Submission = typeof submissions.$inferSelect;
