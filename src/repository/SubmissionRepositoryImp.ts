@@ -38,6 +38,29 @@ export class SubmissionRepositoryImp implements ISubmissionRepository {
     }
   }
 
+  async updateSubmission(submission: Submission): Promise<Submission> {
+    try {
+      const result =
+        submission.getStdOutput() === submission.getExpectedOutput()
+          ? "correct"
+          : "wrong";
+      submission.setResult(result);
+      await this.db
+        .update(submissions)
+        .set({
+          status: submission.getStatus(),
+          stdOutput: submission.getStdOutput(),
+          updatedAt: new Date(),
+          result: result,
+        })
+        .where(eq(submissions.id, submission.getId()));
+
+      return submission;
+    } catch (error) {
+      throw new Error("Failed to update submission");
+    }
+  }
+
   async saveSubmission(submission: Submission): Promise<Submission> {
     try {
       const result = await this.db.insert(submissions).values({

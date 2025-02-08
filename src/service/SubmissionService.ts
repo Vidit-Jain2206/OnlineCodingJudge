@@ -54,27 +54,27 @@ export class SubmissionService {
     }
   }
 
-  // async updateSubmission(
-  //   id: string,
-  //   submissionDto: UpdateSubmissionDto
-  // ): Promise<SubmissionResponseDto> {
-  //   const submission = await this.submissionRepository.getSubmissionById(id);
-  //   if (!submission) {
-  //     throw new Error("Submission not found");
-  //   }
-  //   if (submissionDto.status) {
-  //     submission.setStatus(submissionDto.status);
-  //   }
-  //   if (submissionDto.output) {
-  //     submission.setStdOutput(submissionDto.output);
-  //   }
-  //   const updatedSubmission = await this.submissionRepository.updateSubmission(
-  //     submission
-  //   );
-  //   return {
-  //     id: updatedSubmission.getId(),
-  //     status: updatedSubmission.getStatus(),
-  //     createdAt: updatedSubmission.getCreatedAt(),
-  //   };
-  // }
+  async updateSubmission(
+    id: string,
+    submissionDto: UpdateSubmissionDto
+  ): Promise<SubmissionResponseDto> {
+    const submission = await this.submissionRepository.getSubmissionById(id);
+    if (!submission) {
+      throw new Error("Submission not found");
+    }
+    if (submissionDto.status) {
+      submission.setStatus(submissionDto.status);
+    }
+    if (submissionDto.output) {
+      submission.setStdOutput(submissionDto.output);
+    }
+    const updatedSubmission = await this.submissionRepository.updateSubmission(
+      submission
+    );
+    return {
+      id: updatedSubmission.getId(),
+      status: updatedSubmission.getStatus(),
+      createdAt: updatedSubmission.getCreatedAt(),
+    };
+  }
 }
