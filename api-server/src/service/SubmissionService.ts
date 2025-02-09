@@ -6,9 +6,13 @@ import {
 } from "../../../shared/dtos/SubmissionDto";
 import { Submission } from "../../../shared/entity/Submission";
 import { ISubmissionRepository } from "../../../shared/repository/ISubmissionRepository";
+import { QueueService } from "./QueueService";
 
 export class SubmissionService {
-  constructor(private submissionRepository: ISubmissionRepository) {}
+  constructor(
+    private submissionRepository: ISubmissionRepository,
+    private queueService: QueueService
+  ) {}
 
   async createSubmission(
     submissionDto: CreateSubmissionDto
@@ -26,6 +30,9 @@ export class SubmissionService {
       if (!savedSubmission) {
         throw new Error("Failed to create submission");
       }
+      await this.queueService.addJob("submission", {
+        id: savedSubmission.getId(),
+      });
       return {
         id: savedSubmission.getId(),
         status: savedSubmission.getStatus(),
