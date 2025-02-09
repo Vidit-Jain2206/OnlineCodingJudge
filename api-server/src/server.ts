@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { SubmissionRepositoryImp } from "./repository/SubmissionRepositoryImp";
+import { SubmissionRepositoryImp } from "../../shared/repository/SubmissionRepositoryImp";
 import { SubmissionService } from "./service/SubmissionService";
 import { SubmissionController } from "./controllers/SubmissionController";
 import express from "express";

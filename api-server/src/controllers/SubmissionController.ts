@@ -1,5 +1,5 @@
 import { RequestHandler, Request, Response } from "express";
-import { CreateSubmissionDto } from "../dtos/SubmissionDto";
+import { CreateSubmissionDto } from "../../../shared/dtos/SubmissionDto";
 import { SubmissionService } from "../service/SubmissionService";
 
 export class SubmissionController {

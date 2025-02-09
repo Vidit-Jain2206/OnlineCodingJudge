@@ -1,12 +1,12 @@
 import { eq } from "drizzle-orm";
 import { MySql2Database } from "drizzle-orm/mysql2";
-import * as schema from "../database/schema";
-import { ISubmissionRepository } from "./ISubmissionRepository";
-import { Submission, SubmissionStatus } from "../entity/Submission";
-import { submissions } from "../database/schema";
+import * as schema from "../../shared/database/schema";
+import { ISubmissionRepository } from "../repository/ISubmissionRepository";
+import { Submission, SubmissionStatus } from "../../shared/entity/Submission";
+import { submissions } from "../../shared/database/schema";
 
 export class SubmissionRepositoryImp implements ISubmissionRepository {
-  constructor(private db: MySql2Database<typeof schema>) {}
+  constructor(private db: any) {}
 
   async getSubmissionById(id: string): Promise<Submission | null> {
     try {
@@ -74,6 +74,7 @@ export class SubmissionRepositoryImp implements ISubmissionRepository {
         createdAt: submission.getCreatedAt(),
         updatedAt: submission.getUpdatedAt(),
       });
+
       return submission;
     } catch (error) {
       throw new Error("Failed to create submission");

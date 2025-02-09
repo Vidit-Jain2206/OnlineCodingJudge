@@ -1,36 +1,33 @@
 {
-  "dependencies": {
-    "@types/express": "^5.0.0",
-    "@types/ioredis": "^5.0.0",
-    "@types/node": "^22.13.1",
-    "@types/pg": "^8.11.11",
-    "@types/uuid": "^10.0.0",
-    "dotenv": "^16.4.7",
-    "drizzle-orm": "^0.39.2",
-    "express": "^4.21.2",
-    "ioredis": "^5.4.2",
-    "mysql2": "^3.12.0",
-    "pg": "^8.13.1",
-    "redis": "^4.7.0",
-    "socket.io": "^4.8.1",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.7.3",
-    "uuid": "^11.0.5"
-  },
-  "name": "onlinecodeeditor",
+  "name": "code-editor",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
+  "workspaces": [
+    "api-server",
+    "worker",
+    "shared"
+  ],
   "scripts": {
-    "start": "tsc -b && node dist/server.js",
-    "generate": "drizzle-kit generate:mysql",
+    "start:worker": "npm run build && cd worker && npm run start",
+    "start:api": "npm run build && cd api-server && npm run start",
+    "build:api": " cd api-server && npm run build",
+    "build:worker": "cd worker && npm run build",
+    "build:shared": "cd shared && tsc -b",
+    "build": "npm run build:shared && npm run build:api && npm run build:worker",
+    "dev:api": "cd api-server && npm run dev",
+    "dev:worker": "cd worker && npm run dev",
+    "generate": "npx drizzle-kit generate --config=drizzle.config.ts",
     "push": "drizzle-kit push:mysql",
     "studio": "drizzle-kit studio"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "devDependencies": {
-    "drizzle-kit": "^0.30.4"
+    "@types/node": "^22.13.1",
+    "drizzle-kit": "^0.30.4",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.39.2",
+    "mysql2": "^3.12.0"
   }
 }

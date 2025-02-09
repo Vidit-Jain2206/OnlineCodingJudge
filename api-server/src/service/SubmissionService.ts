@@ -1,13 +1,11 @@
 import { v4 as uuidv4 } from "uuid";
-import { ISubmissionRepository } from "../repository/ISubmissionRepository";
-import { SubmissionRepositoryImp } from "../repository/SubmissionRepositoryImp";
 import {
   CreateSubmissionDto,
   SubmissionResponseDto,
   UpdateSubmissionDto,
-} from "../dtos/SubmissionDto";
-import { Submission } from "../entity/Submission";
-import { db } from "../config/database.config";
+} from "../../../shared/dtos/SubmissionDto";
+import { Submission } from "../../../shared/entity/Submission";
+import { ISubmissionRepository } from "../../../shared/repository/ISubmissionRepository";
 
 export class SubmissionService {
   constructor(private submissionRepository: ISubmissionRepository) {}

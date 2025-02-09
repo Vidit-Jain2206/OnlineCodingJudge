@@ -1,4 +1,4 @@
-import { Submission } from "../entity/Submission";
+import { Submission } from "../../shared/entity/Submission";
 
 export interface ISubmissionRepository {
   getSubmissionById(id: string): Promise<Submission | null>;
