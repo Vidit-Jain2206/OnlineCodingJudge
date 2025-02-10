@@ -38,7 +38,15 @@ class WorkerService {
               output: containerError as string,
               result: "",
             });
-
+            await redisClient.publish(
+              "submission",
+              JSON.stringify({
+                id,
+                status: SubmissionStatus.ERROR,
+                output: containerError as string,
+                result: "System Error",
+              })
+            );
             return;
           }
 
@@ -88,12 +96,34 @@ class WorkerService {
               output: stdout,
               result,
             });
+
+            await redisClient.publish(
+              "submission",
+              JSON.stringify({
+                id,
+                status: SubmissionStatus.COMPLETED,
+                output: stdout,
+                result,
+                expectedOutput: submission.submission.getExpectedOutput(),
+              })
+            );
           } catch (error) {
             await this.submissionService.updateSubmission(id, {
               status: SubmissionStatus.COMPLETED,
               output: error as string,
               result: "Wrong Answer",
             });
+
+            await redisClient.publish(
+              "submission",
+              JSON.stringify({
+                id,
+                status: SubmissionStatus.COMPLETED,
+                output: error,
+                result: "Wrong Answer",
+                expectedOutput: submission.submission.getExpectedOutput(),
+              })
+            );
           }
           await container.remove();
         } catch (error: any) {
@@ -104,6 +134,17 @@ class WorkerService {
               error.message || "System error occurred. please try again later",
             result: "System Error",
           });
+          await redisClient.publish(
+            "submission",
+            JSON.stringify({
+              id,
+              status: SubmissionStatus.ERROR,
+              output:
+                error.message ||
+                "System error occurred. please try again later",
+              result: "System Error",
+            })
+          );
         }
       },
       {
