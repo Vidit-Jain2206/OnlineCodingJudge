@@ -33,10 +33,9 @@ export class SubmissionService {
       await this.queueService.addJob("submission", {
         id: savedSubmission.getId(),
       });
+      console.log("Submission created and job added to queue");
       return {
-        id: savedSubmission.getId(),
-        status: savedSubmission.getStatus(),
-        createdAt: savedSubmission.getCreatedAt(),
+        submission: savedSubmission,
       };
     } catch (error) {
       throw new Error((error as Error).message);
@@ -50,9 +49,7 @@ export class SubmissionService {
         throw new Error("Submission not found");
       }
       return {
-        id: submission.getId(),
-        status: submission.getStatus(),
-        createdAt: submission.getCreatedAt(),
+        submission: submission,
       };
     } catch (error) {
       throw new Error((error as Error).message);
@@ -73,13 +70,14 @@ export class SubmissionService {
     if (submissionDto.output) {
       submission.setStdOutput(submissionDto.output);
     }
+    if (submissionDto.result) {
+      submission.setResult(submissionDto.result);
+    }
     const updatedSubmission = await this.submissionRepository.updateSubmission(
       submission
     );
     return {
-      id: updatedSubmission.getId(),
-      status: updatedSubmission.getStatus(),
-      createdAt: updatedSubmission.getCreatedAt(),
+      submission: updatedSubmission,
     };
   }
 }

@@ -1,4 +1,4 @@
-import { SubmissionStatus } from "../entity/Submission";
+import { Submission, SubmissionStatus } from "../entity/Submission";
 
 export interface CreateSubmissionDto {
   code: string;
@@ -6,12 +6,11 @@ export interface CreateSubmissionDto {
   expectedOutput: string;
 }
 export interface SubmissionResponseDto {
-  id: string;
-  status: SubmissionStatus;
-  createdAt: Date;
+  submission: Submission;
 }
 
 export interface UpdateSubmissionDto {
   status?: SubmissionStatus;
   output?: string;
+  result?: string;
 }

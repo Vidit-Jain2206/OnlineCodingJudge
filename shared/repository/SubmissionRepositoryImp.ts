@@ -40,11 +40,7 @@ export class SubmissionRepositoryImp implements ISubmissionRepository {
 
   async updateSubmission(submission: Submission): Promise<Submission> {
     try {
-      const result =
-        submission.getStdOutput() === submission.getExpectedOutput()
-          ? "correct"
-          : "wrong";
-      submission.setResult(result);
+      const result = submission.getResult();
       await this.db
         .update(submissions)
         .set({

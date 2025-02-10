@@ -7,6 +7,7 @@ import { QueueService } from "../api-server/src/service/QueueService";
 async function startWorker() {
   const repository = new SubmissionRepositoryImp(db);
   const queueService = new QueueService();
+  // console.log(queueService);
   const service = new SubmissionService(repository, queueService);
   const worker = new WorkerService(service);
 

@@ -1,0 +1,17 @@
+{
+  "name": "worker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node dist/worker.js",
+    "dev": "ts-node-dev worker.ts",
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "bullmq": "^5.1.1",
+    "ioredis": "^5.5.0"
+  },
+  "author": "",
+  "license": "ISC"
+}

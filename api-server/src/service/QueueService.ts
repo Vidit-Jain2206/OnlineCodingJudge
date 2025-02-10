@@ -1,3 +1,4 @@
+import { redisConfig } from "../../../shared/config/redis.config";
 import { Queue } from "bullmq";
 
 export class QueueService {
@@ -5,10 +6,7 @@ export class QueueService {
 
   constructor() {
     this.queue = new Queue("submission", {
-      connection: {
-        host: process.env.REDIS_HOST,
-        port: parseInt(process.env.REDIS_PORT || "6379"),
-      },
+      connection: redisConfig,
     });
   }
 
