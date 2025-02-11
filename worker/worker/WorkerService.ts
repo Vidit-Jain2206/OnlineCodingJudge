@@ -21,7 +21,6 @@ class WorkerService {
         const { id } = job.data;
         try {
           const submission = await this.submissionService.getSubmissionById(id);
-          console.log(submission);
           const container = await this.docker.createContainer({
             Image: "code-execution:latest",
             Tty: true,
@@ -88,10 +87,11 @@ class WorkerService {
 
           try {
             const res = await output();
-            const responseArray = res.split("\n");
-            const stdout = responseArray[1].split(":")[1];
-            const result = responseArray[2].split(":")[1];
-            console.log(responseArray);
+            const responseArray = res.split("\n").map((line) => line.trim());
+            const stdout = responseArray[1].split(":")[1].trim();
+            const result = responseArray[responseArray.length - 3]
+              .split(":")[1]
+              .trim();
             await this.submissionService.updateSubmission(id, {
               status: SubmissionStatus.COMPLETED,
               output: stdout,
