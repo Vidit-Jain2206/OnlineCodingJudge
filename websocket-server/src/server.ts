@@ -30,6 +30,7 @@ io.on("connection", (socket) => {
 sub.on("message", (channel, message) => {
   if (channel === "submission") {
     const data = JSON.parse(message);
+
     socketService.sendMessage(data.id, data);
   }
 });

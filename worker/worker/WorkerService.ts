@@ -21,6 +21,7 @@ class WorkerService {
         const { id } = job.data;
         try {
           const submission = await this.submissionService.getSubmissionById(id);
+          console.log(submission);
           const container = await this.docker.createContainer({
             Image: "code-execution:latest",
             Tty: true,
@@ -90,11 +91,11 @@ class WorkerService {
             const responseArray = res.split("\n");
             const stdout = responseArray[1].split(":")[1];
             const result = responseArray[2].split(":")[1];
-
+            console.log(responseArray);
             await this.submissionService.updateSubmission(id, {
               status: SubmissionStatus.COMPLETED,
               output: stdout,
-              result,
+              result: result,
             });
 
             await redisClient.publish(
@@ -103,7 +104,7 @@ class WorkerService {
                 id,
                 status: SubmissionStatus.COMPLETED,
                 output: stdout,
-                result,
+                result: result,
                 expectedOutput: submission.submission.getExpectedOutput(),
               })
             );

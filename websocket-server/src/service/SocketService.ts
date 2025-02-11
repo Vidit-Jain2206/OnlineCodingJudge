@@ -12,7 +12,6 @@ export class SocketService {
   }
 
   async sendMessage(roomId: string, message: string) {
-    console.log(roomId, message);
     this.io.to(roomId).emit("submission:completed", message);
   }
 }
