@@ -10,12 +10,15 @@
   "scripts": {
     "start:worker": "npm run build && cd worker && npm run start",
     "start:api": "npm run build && cd api-server && npm run start",
+    "start:websocket": "npm run build && cd websocket-server && npm run start",
     "build:api": " cd api-server && npm run build",
     "build:worker": "cd worker && npm run build",
+    "build:websocket": "cd websocket-server && npm run build",
     "build:shared": "cd shared && tsc -b",
-    "build": "npm run build:shared && npm run build:api && npm run build:worker",
+    "build": "npm run build:shared && npm run build:api && npm run build:worker && npm run build:websocket",
     "dev:api": "cd api-server && npm run dev",
     "dev:worker": "cd worker && npm run dev",
+    "dev:websocket": "cd websocket-server && npm run dev",
     "generate": "npx drizzle-kit generate --config=drizzle.config.ts",
     "push": "drizzle-kit push:mysql",
     "studio": "drizzle-kit studio"
@@ -27,9 +30,11 @@
   },
   "dependencies": {
     "@types/dockerode": "^3.3.34",
+    "cors": "^2.8.5",
     "dockerode": "^4.0.4",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.39.2",
-    "mysql2": "^3.12.0"
+    "mysql2": "^3.12.0",
+    "socket.io": "^4.8.1"
   }
 }

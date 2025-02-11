@@ -107,6 +107,7 @@ class WorkerService {
                 expectedOutput: submission.submission.getExpectedOutput(),
               })
             );
+            console.log("Submission completed");
           } catch (error) {
             await this.submissionService.updateSubmission(id, {
               status: SubmissionStatus.COMPLETED,
@@ -124,6 +125,7 @@ class WorkerService {
                 expectedOutput: submission.submission.getExpectedOutput(),
               })
             );
+            console.log("Submission completed");
           }
           await container.remove();
         } catch (error: any) {
