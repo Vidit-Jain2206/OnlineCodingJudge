@@ -152,6 +152,7 @@ class WorkerService {
       },
       {
         connection: redisConfig,
+        concurrency: 2,
       }
     );
     return worker;
