@@ -32,6 +32,29 @@ class WorkerService {
 
           try {
             await container.start();
+            setTimeout(async () => {
+              console.log("Checking if container is running");
+              if ((await container.inspect()).State.Status === "running") {
+                console.log("Container is running, stopping it");
+                await container.stop();
+                await container.remove();
+                await this.submissionService.updateSubmission(id, {
+                  status: SubmissionStatus.ERROR,
+                  output: "Execution timeout",
+                  result: "System Error",
+                });
+                await redisClient.publish(
+                  "submission",
+                  JSON.stringify({
+                    id,
+                    status: SubmissionStatus.ERROR,
+                    output: "Execution timeout",
+                    result: "System Error",
+                  })
+                );
+                return;
+              }
+            }, 10000);
           } catch (containerError) {
             await this.submissionService.updateSubmission(id, {
               status: SubmissionStatus.ERROR,
@@ -130,6 +153,7 @@ class WorkerService {
           }
           await container.remove();
         } catch (error: any) {
+          console.log("Error in worker", error);
           // not able to create the container or not able to fetch the submission from database
           await this.submissionService.updateSubmission(id, {
             status: SubmissionStatus.ERROR,
