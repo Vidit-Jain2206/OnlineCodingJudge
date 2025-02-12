@@ -4,24 +4,97 @@ import { Worker } from "bullmq";
 import Docker from "dockerode";
 import { redisConfig } from "../../shared/config/redis.config";
 import { redisClient } from "worker/config/redis.config";
+
 class WorkerService {
   private docker: Docker;
+  private readonly EXECUTION_TIMEOUT = 10000; // 10 seconds timeout
+
   constructor(private submissionService: SubmissionService) {
     this.docker = new Docker();
   }
-  isErrorOutput(output: string): boolean {
-    // Implement logic to determine if the output is an error
-    // This could be based on specific keywords or patterns in the output
+
+  private isErrorOutput(output: string): boolean {
     return output.includes("Error") || output.includes("Exception");
   }
+
+  private async updateSubmissionStatus(
+    id: string,
+    status: SubmissionStatus,
+    output: string,
+    result: string,
+    expectedOutput?: string
+  ) {
+    await this.submissionService.updateSubmission(id, {
+      status,
+      output,
+      result,
+    });
+
+    await redisClient.publish(
+      "submission",
+      JSON.stringify({
+        id,
+        status,
+        output,
+        result,
+        expectedOutput,
+      })
+    );
+  }
+
+  private async handleContainerOutput(stream: any): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      let result = "";
+      let errorOutput = "";
+
+      stream.on("data", (data: Buffer) => {
+        const outputString = data.toString();
+        if (this.isErrorOutput(outputString)) {
+          errorOutput += outputString;
+        } else {
+          result += outputString;
+        }
+      });
+
+      stream.on("error", (err: Error) => {
+        reject(new Error(`Stream error: ${err.message}`));
+      });
+
+      stream.on("end", () => {
+        if (errorOutput) {
+          reject(new Error(errorOutput));
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  private async cleanupContainer(container: Docker.Container) {
+    try {
+      const containerInfo = await container.inspect();
+      if (containerInfo.State.Running) {
+        await container.stop();
+      }
+      await container.remove();
+    } catch (error) {
+      console.error("Error cleaning up container:", error);
+    }
+  }
+
   async startWorker() {
     const worker = new Worker(
       "submission",
       async (job) => {
         const { id } = job.data;
+        let container: Docker.Container | null = null;
+
         try {
           const submission = await this.submissionService.getSubmissionById(id);
-          const container = await this.docker.createContainer({
+          if (!submission) {
+            throw new Error("Submission not found");
+          }
+          container = await this.docker.createContainer({
             Image: "code-execution:latest",
             Tty: true,
             Env: [
@@ -30,48 +103,15 @@ class WorkerService {
             ],
           });
 
-          try {
-            await container.start();
+          await container.start();
+          console.log(`Container started: ${container.id}`);
+
+          // Set up timeout handler
+          const timeoutPromise: Promise<string> = new Promise((_, reject) => {
             setTimeout(async () => {
-              console.log("Checking if container is running");
-              if ((await container.inspect()).State.Status === "running") {
-                console.log("Container is running, stopping it");
-                await container.stop();
-                await container.remove();
-                await this.submissionService.updateSubmission(id, {
-                  status: SubmissionStatus.ERROR,
-                  output: "Execution timeout",
-                  result: "System Error",
-                });
-                await redisClient.publish(
-                  "submission",
-                  JSON.stringify({
-                    id,
-                    status: SubmissionStatus.ERROR,
-                    output: "Execution timeout",
-                    result: "System Error",
-                  })
-                );
-                return;
-              }
-            }, 10000);
-          } catch (containerError) {
-            await this.submissionService.updateSubmission(id, {
-              status: SubmissionStatus.ERROR,
-              output: containerError as string,
-              result: "",
-            });
-            await redisClient.publish(
-              "submission",
-              JSON.stringify({
-                id,
-                status: SubmissionStatus.ERROR,
-                output: containerError as string,
-                result: "System Error",
-              })
-            );
-            return;
-          }
+              reject(new Error("Execution timeout"));
+            }, this.EXECUTION_TIMEOUT);
+          });
 
           const stream = await container.attach({
             stream: true,
@@ -79,99 +119,50 @@ class WorkerService {
             stderr: true,
           });
 
-          const output = async () => {
-            return new Promise<string>((resolve, reject) => {
-              let result = "";
-              let errorOutput = "";
-
-              stream.on("data", (data) => {
-                const outputString = data.toString();
-                if (this.isErrorOutput(outputString)) {
-                  errorOutput += outputString;
-                } else {
-                  result += outputString;
-                }
-              });
-
-              stream.on("error", (err) => {
-                reject(err);
-              });
-
-              stream.on("end", () => {
-                if (errorOutput) {
-                  reject(errorOutput);
-                } else {
-                  resolve(result);
-                }
-              });
-            });
-          };
-          await container.wait();
-
           try {
-            const res = await output();
-            const responseArray = res.split("\n").map((line) => line.trim());
+            // Race between execution and timeout
+            const output: string = await Promise.race([
+              this.handleContainerOutput(stream),
+              timeoutPromise,
+            ]);
+
+            await container.wait();
+
+            const responseArray = output.split("\n").map((line) => line.trim());
             const stdout = responseArray[1].split(":")[1].trim();
             const result = responseArray[responseArray.length - 3]
               .split(":")[1]
               .trim();
-            await this.submissionService.updateSubmission(id, {
-              status: SubmissionStatus.COMPLETED,
-              output: stdout,
-              result: result,
-            });
 
-            await redisClient.publish(
-              "submission",
-              JSON.stringify({
-                id,
-                status: SubmissionStatus.COMPLETED,
-                output: stdout,
-                result: result,
-                expectedOutput: submission.submission.getExpectedOutput(),
-              })
-            );
-            console.log("Submission completed");
-          } catch (error) {
-            await this.submissionService.updateSubmission(id, {
-              status: SubmissionStatus.COMPLETED,
-              output: error as string,
-              result: "Wrong Answer",
-            });
-
-            await redisClient.publish(
-              "submission",
-              JSON.stringify({
-                id,
-                status: SubmissionStatus.COMPLETED,
-                output: error,
-                result: "Wrong Answer",
-                expectedOutput: submission.submission.getExpectedOutput(),
-              })
-            );
-            console.log("Submission completed");
-          }
-          await container.remove();
-        } catch (error: any) {
-          console.log("Error in worker", error);
-          // not able to create the container or not able to fetch the submission from database
-          await this.submissionService.updateSubmission(id, {
-            status: SubmissionStatus.ERROR,
-            output:
-              error.message || "System error occurred. please try again later",
-            result: "System Error",
-          });
-          await redisClient.publish(
-            "submission",
-            JSON.stringify({
+            await this.updateSubmissionStatus(
               id,
-              status: SubmissionStatus.ERROR,
-              output:
-                error.message ||
-                "System error occurred. please try again later",
-              result: "System Error",
-            })
+              SubmissionStatus.COMPLETED,
+              stdout,
+              result,
+              submission.submission.getExpectedOutput()
+            );
+          } catch (error: any) {
+            const isTimeout = error.message === "Execution timeout";
+            await this.updateSubmissionStatus(
+              id,
+              isTimeout ? SubmissionStatus.ERROR : SubmissionStatus.COMPLETED,
+              error.message,
+              isTimeout ? "System Error" : "Wrong Answer",
+              submission.submission.getExpectedOutput()
+            );
+          }
+        } catch (error: any) {
+          console.error("Error in worker:", error);
+          await this.updateSubmissionStatus(
+            id,
+            SubmissionStatus.ERROR,
+            error.message || "System error occurred. Please try again later",
+            "System Error"
           );
+        } finally {
+          if (container) {
+            await this.cleanupContainer(container);
+          }
         }
       },
       {
@@ -179,6 +170,7 @@ class WorkerService {
         concurrency: 2,
       }
     );
+
     return worker;
   }
 }
