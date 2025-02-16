@@ -1,30 +1,51 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Split, Play, Check } from "lucide-react";
 import { Editor } from "@monaco-editor/react";
+import { problem } from "./utils/Problem";
+import { io } from "socket.io-client";
+import axios from "axios";
+
+const SOCKET_SERVER_URL = "http://localhost:8000"; // Change this to your server URL
 
 const ProblemLayout = () => {
   const [language, setLanguage] = useState("javascript");
-  const [code, setCode] = useState(`function twoSum(nums, target) {
-    // Write your code here
-}`);
+  const [code, setCode] = useState(problem.boilerPlateCode);
+  const [status, setStatus] = useState("");
+  const [socket, setSocket] = useState(null);
 
-  // Sample problem data
-  const problem = {
-    title: "1. Two Sum",
-    difficulty: "Easy",
-    description: `Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice.You can return the answer in any order.`,
-    examples: [
-      {
-        input: "nums = [2,7,11,15], target = 9",
-        output: "[0,1]",
-        explanation: "Because nums[0] + nums[1] == 9, we return [0, 1].",
-      },
-    ],
+  useEffect(() => {
+    const socket = io(SOCKET_SERVER_URL);
+    setSocket(socket);
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("submission:completed", (data) => {
+        console.log(data);
+        setStatus("Completed");
+      });
+    }
+  }, []);
+
+  const handleSubmit = async () => {
+    try {
+      const { data } = await axios.post("http://localhost:3000/submissions", {
+        code,
+        language,
+        expectedOutput: problem.examples[0].output,
+      });
+      const id = data.submission.id;
+      const status = data.submission.status;
+      console.log(data);
+      setStatus(status);
+      socket.emit("join:room", id);
+    } catch (error) {}
   };
 
-  const handleSubmit = () => {
-    console.log("Submitting code:", code);
-  };
+  console.log(status);
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
@@ -102,7 +123,13 @@ const ProblemLayout = () => {
               </button>
             </div>
             <div className="p-4 font-mono text-sm text-gray-600 h-full overflow-y-auto">
-              // Console output will appear here
+              {status === "pending" && (
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+              )}
             </div>
           </div>
         </div>

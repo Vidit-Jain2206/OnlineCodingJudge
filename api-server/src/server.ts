@@ -5,6 +5,7 @@ import { SubmissionController } from "./controllers/SubmissionController";
 import express from "express";
 import { db } from "./config/database.config";
 import { QueueService } from "./service/QueueService";
+import cors from "cors";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ const submissionController = new SubmissionController(submissionService);
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 app.post("/submissions", submissionController.submitCode);
 

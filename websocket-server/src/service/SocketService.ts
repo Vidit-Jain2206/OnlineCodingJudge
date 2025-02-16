@@ -12,6 +12,7 @@ export class SocketService {
   }
 
   async sendMessage(roomId: string, message: string) {
+    console.log("sending back to ", roomId, message);
     this.io.to(roomId).emit("submission:completed", message);
   }
 }
