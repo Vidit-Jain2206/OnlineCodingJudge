@@ -11,6 +11,7 @@ export class SubmissionController {
   ): Promise<void> => {
     try {
       const submissionDto: CreateSubmissionDto = {
+        questionId: req?.body?.questionId,
         code: req?.body?.code,
         language: req?.body?.language,
         expectedOutput: req?.body?.expectedOutput,
@@ -18,11 +19,13 @@ export class SubmissionController {
       if (
         !submissionDto.code ||
         !submissionDto.language ||
-        !submissionDto.expectedOutput
+        !submissionDto.expectedOutput ||
+        !submissionDto.questionId
       ) {
         throw new Error("Missing required fields");
       }
       const submission = await this.submissionService.createSubmission({
+        questionId: submissionDto.questionId,
         code: submissionDto.code,
         language: submissionDto.language,
         expectedOutput: submissionDto.expectedOutput,

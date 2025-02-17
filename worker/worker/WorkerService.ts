@@ -18,6 +18,7 @@ class WorkerService {
   }
 
   private async updateSubmissionStatus(
+    questionId: string,
     id: string,
     status: SubmissionStatus,
     output: string,
@@ -34,6 +35,7 @@ class WorkerService {
       "submission",
       JSON.stringify({
         id,
+        questionId,
         status,
         output,
         result,
@@ -86,7 +88,7 @@ class WorkerService {
     const worker = new Worker(
       "submission",
       async (job) => {
-        const { id } = job.data;
+        const { id, questionId } = job.data;
         let container: Docker.Container | null = null;
 
         try {
@@ -135,6 +137,7 @@ class WorkerService {
               .trim();
 
             await this.updateSubmissionStatus(
+              questionId,
               id,
               SubmissionStatus.COMPLETED,
               stdout,
@@ -144,6 +147,7 @@ class WorkerService {
           } catch (error: any) {
             const isTimeout = error.message === "Execution timeout";
             await this.updateSubmissionStatus(
+              questionId,
               id,
               isTimeout ? SubmissionStatus.ERROR : SubmissionStatus.COMPLETED,
               error.message,
@@ -154,6 +158,7 @@ class WorkerService {
         } catch (error: any) {
           console.error("Error in worker:", error);
           await this.updateSubmissionStatus(
+            questionId,
             id,
             SubmissionStatus.ERROR,
             error.message || "System error occurred. Please try again later",

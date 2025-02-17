@@ -31,6 +31,7 @@ export class SubmissionService {
         throw new Error("Failed to create submission");
       }
       await this.queueService.addJob("submission", {
+        questionId: submissionDto.questionId,
         id: savedSubmission.getId(),
       });
       console.log("Submission created and job added to queue");

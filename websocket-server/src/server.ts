@@ -31,9 +31,7 @@ sub.on("message", (channel, message) => {
   if (channel === "submission") {
     const data = JSON.parse(message);
     console.log(data);
-    setTimeout(() => {
-      socketService.sendMessage(data.id, data);
-    }, 4000);
+    socketService.sendMessage(data.questionId, data);
   }
 });
 
