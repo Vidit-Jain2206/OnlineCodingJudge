@@ -29,12 +29,16 @@ io.on("connection", (socket) => {
   socket.on(
     "chat:message",
     async (
+      context: { problemStatement: string; programmingLanguage: string },
+      extractedCode: string,
       chatMessagesHistory: ChatMessage[],
       userMessage: string,
       roomId: string
     ) => {
       // now get the response from the openai server and send it to the client
       const message: ChatMessage = await socketService.generateResponse(
+        context,
+        extractedCode,
         chatMessagesHistory,
         userMessage
       );
