@@ -10,7 +10,7 @@ export const problem = {
     {
       input: "nums = [2,7,11,15], target = 9",
       output: "[0,1]",
-      explanation: "Because nums[0] + nums[1] == 9, we return [0, 1].",
+      explanation: "nums[0] + nums[1] == 9, we return [0, 1].",
     },
   ],
 };

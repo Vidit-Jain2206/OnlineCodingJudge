@@ -9,7 +9,7 @@ const SOCKET_SERVER_URL = "http://localhost:8000"; // Change this to your server
 
 const ProblemLayout = () => {
   const [language, setLanguage] = useState("javascript");
-  const [code, setCode] = useState(problem.boilerPlateCode);
+  const [code, setCode] = useState(problem?.boilerPlateCode);
   const [status, setStatus] = useState("");
   const [socket, setSocket] = useState(null);
   const [result, setResult] = useState({
@@ -84,8 +84,11 @@ const ProblemLayout = () => {
                 <p className="font-mono text-sm mb-2">
                   Output: {problem.examples[0].output}
                 </p>
-                <p className="text-sm text-gray-600">
-                  {problem.examples[0].explanation}
+                <p className="font-mono text-sm mb-2">
+                  Explanation:{" "}
+                  <span className=" text-sm text-gray-600">
+                    {problem.examples[0].explanation}
+                  </span>
                 </p>
               </div>
             </div>
