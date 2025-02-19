@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import { SocketService } from "./service/SocketService";
+import "dotenv/config";
 
 import { createServer } from "http";
 const app = createServer();
@@ -36,19 +37,24 @@ io.on("connection", (socket) => {
       roomId: string
     ) => {
       // now get the response from the openai server and send it to the client
-      const message: ChatMessage = await socketService.generateResponse(
-        context,
-        extractedCode,
-        chatMessagesHistory,
-        userMessage
-      );
+      // const message: ChatMessage = await socketService.generateResponse(
+      //   context,
+      //   extractedCode,
+      //   chatMessagesHistory,
+      //   userMessage
+      // );
+      const message: ChatMessage = {
+        message: "helli i am vidifonfrnfgjkrenjk",
+        role: "assistant",
+        type: "markdown",
+      };
       await socketService.sendMessage(roomId, message);
     }
   );
 });
 
 app.listen(8080, () => {
-  console.log("Server is running on port 8000");
+  console.log("Server is running on port 8080");
 });
 
 export interface ChatMessage {

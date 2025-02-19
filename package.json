@@ -21,6 +21,7 @@
     "dev:api": "cd api-server && npm run dev",
     "dev:worker": "cd worker && npm run dev",
     "dev:websocket": "cd websocket-server && npm run dev",
+    "dev:chat-bot": "cd chat-bot && npm run dev",
     "generate": "npx drizzle-kit generate --config=drizzle.config.ts",
     "push": "drizzle-kit push:mysql",
     "studio": "drizzle-kit studio"
