@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useReducer, useRef, useState } from "react";
 import io from "socket.io-client";
 import { problem } from "./utils/Problem";
 
@@ -7,6 +7,7 @@ const ChatBox = ({ code, language, setChatBoxExpanded }) => {
   const [chatHistory, setChatHistory] = useState([]);
   const [userMessage, setUserMessage] = useState("");
   const [socket, setSocket] = useState();
+  const lastMessageRef = useRef();
 
   useEffect(() => {
     const socket = io(URL);
@@ -23,6 +24,7 @@ const ChatBox = ({ code, language, setChatBoxExpanded }) => {
         setChatHistory((prev) => [...prev, data]);
       });
     }
+    lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [socket]);
 
   console.log(chatHistory);
@@ -59,6 +61,9 @@ const ChatBox = ({ code, language, setChatBoxExpanded }) => {
         {" "}
         X
       </span>
+      <h1 className="text-black text-[2rem]! font-bold bg-gray-100  py-2">
+        Welcome to ChatAI
+      </h1>
       {/* Chat History (Scrollable) */}
       <div className="flex flex-col space-y-2 mt-8 mx-2 max-h-[600px] overflow-y-auto">
         {chatHistory.length > 0 &&
@@ -74,6 +79,7 @@ const ChatBox = ({ code, language, setChatBoxExpanded }) => {
               {message.message}
             </div>
           ))}
+        <div ref={lastMessageRef} />
       </div>
 
       {/* Input Field */}
@@ -84,6 +90,11 @@ const ChatBox = ({ code, language, setChatBoxExpanded }) => {
           placeholder="Type a message..."
           value={userMessage}
           onChange={(e) => setUserMessage(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSendMessage();
+            }
+          }}
         />
         <button
           className="ml-2 px-2! py-1! border-2 border-black bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"

@@ -166,7 +166,9 @@ const ProblemLayout = ({ code, setCode, language, setLanguage }) => {
                     className={`font-bold p-2 rounded ${
                       result?.result?.toLowerCase() === "wrong answer"
                         ? "text-red-500 bg-red-100 border border-red-300"
-                        : "text-green-500 bg-green-100 border border-green-300"
+                        : result?.result?.toLowerCase() === "accepted"
+                        ? "text-green-500 bg-green-100 border border-green-300"
+                        : "bg-gray-100 border border-gray-300"
                     }`}
                   >
                     Result: {result?.result}
