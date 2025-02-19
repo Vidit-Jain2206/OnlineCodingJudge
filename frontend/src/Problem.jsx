@@ -7,9 +7,7 @@ import axios from "axios";
 
 const SOCKET_SERVER_URL = "http://localhost:8000"; // Change this to your server URL
 
-const ProblemLayout = () => {
-  const [language, setLanguage] = useState("javascript");
-  const [code, setCode] = useState(problem?.boilerPlateCode);
+const ProblemLayout = ({ code, setCode, language, setLanguage }) => {
   const [status, setStatus] = useState("");
   const [socket, setSocket] = useState(null);
   const [result, setResult] = useState({
