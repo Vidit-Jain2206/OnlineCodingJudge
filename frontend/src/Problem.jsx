@@ -100,11 +100,10 @@ const ProblemLayout = ({ code, setCode, language, setLanguage }) => {
             <select
               className="px-3 py-2 border rounded-md bg-white"
               value={language}
-              disabled
               onChange={(e) => setLanguage(e.target.value)}
             >
               <option value="javascript">JavaScript</option>
-              <option value="python">Python</option>
+              {/* <option value="python"></option> */}
               <option value="java">Java</option>
             </select>
           </div>
