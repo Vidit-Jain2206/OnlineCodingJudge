@@ -102,6 +102,7 @@ class WorkerService {
             Env: [
               `SOURCE_CODE=${submission.submission.getCode()}`,
               `EXPECTED_OUTPUT=${submission.submission.getExpectedOutput()}`,
+              `LANGUAGE=${submission.submission.getLanguage()}`,
             ],
           });
 
