@@ -17,7 +17,7 @@ function App() {
         language={language}
         setLanguage={setLanguage}
       />
-      <div className="w-[30%] flex justify-end items-end absolute bottom-4 right-0">
+      <div className="w-[30%] flex justify-end items-end absolute bottom-4 right-0 z-100">
         {!chatBoxExpanded && (
           <button
             className=" outline-none selection:outline-none"
