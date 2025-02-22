@@ -144,21 +144,20 @@ const ProblemLayout = ({ code, setCode, language, setLanguage }) => {
                   </div>
 
                   {/* Stdout */}
-                  <div className=" bg-gray-100 p-2 rounded border border-gray-300 text-wrap">
-                    <span className="font-bold text-gray-700">Stdout:</span>
-                    <pre className="text-gray-600 whitespace-pre-wrap">
-                      {result?.output}
-                    </pre>
-                  </div>
-
-                  {/* Error Message (if present) */}
-                  {result?.output?.includes("Error") ||
-                    (result?.output?.includes("error") && (
-                      <div className="text-red-500 p-2 bg-red-50 border border-red-300 rounded text-wrap">
-                        <span className="font-bold">Error:</span>{" "}
+                  {!result?.output?.toLocaleLowerCase().includes("error") && (
+                    <div className=" bg-gray-100 p-2 rounded border border-gray-300 text-wrap">
+                      <span className="font-bold text-gray-700">Stdout:</span>
+                      <pre className="text-gray-600 whitespace-pre-wrap">
                         {result?.output}
-                      </div>
-                    ))}
+                      </pre>
+                    </div>
+                  )}
+                  {/* Error Message (if present) */}
+                  {result?.output?.toLocaleLowerCase().includes("error") && (
+                    <div className="text-red-500 p-2 bg-red-50 border border-red-300 rounded text-wrap">
+                      <span className="font-bold">Error:</span> {result?.output}
+                    </div>
+                  )}
 
                   {/* Result */}
                   <div

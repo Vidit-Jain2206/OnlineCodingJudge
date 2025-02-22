@@ -14,7 +14,9 @@ class WorkerService {
   }
 
   private isErrorOutput(output: string): boolean {
-    return output.includes("Error") || output.includes("Exception");
+    return (
+      output.toLowerCase().includes("error") || output.includes("Exception")
+    );
   }
 
   private async updateSubmissionStatus(
@@ -97,7 +99,7 @@ class WorkerService {
             throw new Error("Submission not found");
           }
           container = await this.docker.createContainer({
-            Image: "code-execution:latest",
+            Image: "code-executioner-multlanguage:latest",
             Tty: true,
             Env: [
               `SOURCE_CODE=${submission.submission.getCode()}`,
@@ -132,8 +134,9 @@ class WorkerService {
             await container.wait();
 
             const responseArray = output.split("\n").map((line) => line.trim());
+
             const stdout = responseArray[1].split(":")[1].trim();
-            const result = responseArray[responseArray.length - 3]
+            const result = responseArray[responseArray.length - 2]
               .split(":")[1]
               .trim();
 
