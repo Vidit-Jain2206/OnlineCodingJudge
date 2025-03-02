@@ -1,64 +1,60 @@
-import { Server } from "socket.io";
-import { SocketService } from "./service/SocketService";
-import "dotenv/config";
+import express from "express";
+import { SYSTEM_PROMPT } from "./utils/systemPrompt";
+import { client } from "./config/openaiclient";
+const app = express();
 
-import { createServer } from "http";
-const app = createServer();
+app.post("/chat", async (req, res) => {
+  try {
+    const { context, extractedCode, chatMessagesHistory, userMessage } =
+      req.body;
 
-const io = new Server(app, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
-});
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Transfer-Encoding", "chunked");
 
-const socketService = new SocketService(io);
+    const systemPromptModified = SYSTEM_PROMPT.replace(
+      "{{problem_statement}}",
+      context.problemStatement
+    )
+      .replace("{{programming_language}}", context.programmingLanguage)
+      .replace("{{user_code}}", extractedCode);
 
-io.on("connection", (socket) => {
-  console.log("a user connected");
+    const stream = await client.chat.completions.create({
+      model: "gpt-4o",
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: systemPromptModified },
+        ...chatMessagesHistory.map((chat: ChatMessage) => ({
+          role: chat.role,
+          content: chat.message,
+        })),
+        { role: "user", content: userMessage },
+      ],
+      stream: true,
+    });
 
-  // Error handling for the socket
-  socket.on("error", (error) => {
-    console.error("Socket error:", error);
-  });
-
-  socket.on("join:room", async (roomId: string) => {
-    await socketService.joinRoom(socket.id, roomId);
-    console.log(`User ${socket.id} joined room ${roomId}`);
-  });
-
-  socket.on(
-    "chat:message",
-    async (
-      context: { problemStatement: string; programmingLanguage: string },
-      extractedCode: string,
-      chatMessagesHistory: ChatMessage[],
-      userMessage: string,
-      roomId: string
-    ) => {
-      // now get the response from the openai server and send it to the client
-      // const message: ChatMessage = await socketService.generateResponse(
-      //   context,
-      //   extractedCode,
-      //   chatMessagesHistory,
-      //   userMessage
-      // );
-      const message: ChatMessage = {
-        message: "helli i am vidifonfrnfgjkrenjk",
-        role: "assistant",
-        type: "markdown",
-      };
-      await socketService.sendMessage(roomId, message);
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || "";
+      if (content) {
+        res.write(
+          JSON.stringify({
+            role: "assistant",
+            message: content,
+            type: "text",
+          }) + "\n"
+        );
+      }
     }
-  );
+    res.end();
+  } catch (error: any) {
+    res.status(500).json({ error: error });
+  }
 });
-
-app.listen(8080, () => {
-  console.log("Server is running on port 8080");
-});
-
 export interface ChatMessage {
   role: "user" | "assistant";
   message: string;
   type: "text" | "markdown";
 }
+
+app.listen(8080, () => {
+  console.log("Server is running on port 3000");
+});
