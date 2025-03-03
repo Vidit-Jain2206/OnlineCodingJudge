@@ -31,11 +31,13 @@ app.post("/chat", async (req, res) => {
         }
         if (content) {
           res.write(
-            `data: ${JSON.stringify({
-              role: "assistant",
-              message: content,
-              type: "text",
-            })}\n\n`
+            JSON.stringify(
+              {
+                role: "assistant",
+                message: content,
+                type: "text",
+              } + "\n"
+            )
           );
         }
       }
