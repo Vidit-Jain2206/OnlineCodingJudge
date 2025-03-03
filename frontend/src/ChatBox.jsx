@@ -1,8 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { problem } from "./utils/Problem";
 import axios from "axios";
-
-const URL = "http://localhost:8080";
 const ChatBox = ({ code, language, setChatBoxExpanded }) => {
   const [chatHistory, setChatHistory] = useState([]);
   const [userMessage, setUserMessage] = useState("");
@@ -26,26 +24,6 @@ const ChatBox = ({ code, language, setChatBoxExpanded }) => {
     initialiseChat();
   }, []);
 
-  // useEffect(() => {
-  //   const socket = io(URL);
-  //   setSocket(socket);
-  //   socket.emit("join:room", problem.id);
-  //   return () => {
-  //     socket.disconnect();
-  //   };
-  // }, []);
-
-  // useEffect(() => {
-  //   if (socket) {
-  //     socket.on("chat:response", (data) => {
-  //       setChatHistory((prev) => [...prev, data]);
-  //     });
-  //   }
-  //   lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
-  // }, [socket]);
-
-  // console.log(chatHistory);
-
   const handleSendMessage = async () => {
     if (!userMessage.trim()) return;
     const response = await fetch("http://localhost:8080/chat", {
@@ -61,8 +39,6 @@ const ChatBox = ({ code, language, setChatBoxExpanded }) => {
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-
-        // Decode incoming data and parse JSON
         const chunks = decoder
           .decode(value, { stream: true })
           .split("\n")
@@ -109,8 +85,8 @@ const ChatBox = ({ code, language, setChatBoxExpanded }) => {
               key={index}
               className={`p-2 text-left rounded-lg max-w-xs ${
                 message.role === "user"
-                  ? "bg-[#A7C7E7] text-gray-800 self-end" // Soft pastel blue for user messages
-                  : "bg-[#B5EAD7] text-gray-800 self-start" // Soft pastel green for bot messages
+                  ? "bg-[#A7C7E7] text-gray-800 self-end"
+                  : "bg-[#B5EAD7] text-gray-800 self-start"
               }`}
             >
               {message.message}
