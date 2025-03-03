@@ -1,54 +1,91 @@
-import React, { useEffect, useReducer, useRef, useState } from "react";
-import io from "socket.io-client";
+import React, { useEffect, useRef, useState } from "react";
 import { problem } from "./utils/Problem";
+import axios from "axios";
 
 const URL = "http://localhost:8080";
 const ChatBox = ({ code, language, setChatBoxExpanded }) => {
   const [chatHistory, setChatHistory] = useState([]);
   const [userMessage, setUserMessage] = useState("");
-  const [socket, setSocket] = useState();
+  const [threadId, setThreadId] = useState("");
   const lastMessageRef = useRef();
 
   useEffect(() => {
-    const socket = io(URL);
-    setSocket(socket);
-    socket.emit("join:room", problem.id);
-    return () => {
-      socket.disconnect();
-    };
+    async function initialiseChat() {
+      const { data } = await axios.post(
+        "/http://localhost:8080/initialise_chat",
+        {
+          context: {
+            problemStatement: problem.description,
+            programmingLanguage: language,
+          },
+          extractedCode: code,
+        }
+      );
+      setThreadId(data.threadId);
+    }
+    initialiseChat();
   }, []);
 
-  useEffect(() => {
-    if (socket) {
-      socket.on("chat:response", (data) => {
-        setChatHistory((prev) => [...prev, data]);
-      });
-    }
-    lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [socket]);
+  // useEffect(() => {
+  //   const socket = io(URL);
+  //   setSocket(socket);
+  //   socket.emit("join:room", problem.id);
+  //   return () => {
+  //     socket.disconnect();
+  //   };
+  // }, []);
 
-  console.log(chatHistory);
+  // useEffect(() => {
+  //   if (socket) {
+  //     socket.on("chat:response", (data) => {
+  //       setChatHistory((prev) => [...prev, data]);
+  //     });
+  //   }
+  //   lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+  // }, [socket]);
 
-  const handleSendMessage = () => {
+  // console.log(chatHistory);
+
+  const handleSendMessage = async () => {
     if (!userMessage.trim()) return;
-    if (socket) {
-      socket.emit(
-        "chat:message",
-        {
-          problemStatement: problem.description,
-          programmingLanguage: language,
-        },
-        code,
-        chatHistory,
-        userMessage,
-        problem.id
-      );
+    const response = await fetch("http://localhost:8080/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ threadId, userMessage }),
+    });
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+    let assistantMessage = { role: "assistant", message: "", type: "text" };
+
+    if (reader) {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        // Decode incoming data and parse JSON
+        const chunks = decoder
+          .decode(value, { stream: true })
+          .split("\n")
+          .filter(Boolean);
+        chunks.forEach((chunk) => {
+          try {
+            const parsedChunk = JSON.parse(chunk);
+            if (parsedChunk.role === "assistant") {
+              assistantMessage.message += parsedChunk.message;
+              setChatHistory((prev) => [
+                ...prev,
+                { message: userMessage, role: "user", type: "text" },
+                { ...assistantMessage },
+              ]);
+            }
+          } catch (err) {
+            console.error("Error parsing chunk:", err);
+          }
+        });
+      }
+
+      setUserMessage("");
     }
-    setChatHistory((prev) => [
-      ...prev,
-      { message: userMessage, role: "user", type: "text" },
-    ]);
-    setUserMessage("");
   };
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto border-2 border-gray-50 rounded-lg shadow-md bg-white relative">
