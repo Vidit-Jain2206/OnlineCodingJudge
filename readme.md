@@ -4,6 +4,20 @@
 
 **OnlineCodingJudge** is a web-based platform designed to provide users with coding challenges and an interactive environment to practice and improve their programming skills. It offers a variety of problems across different difficulty levels, allowing users to submit code solutions, receive immediate feedback. The platform supports multiple programming languages and a chatbot to communicate.
 
+## Design
+
+The architecture of **OnlineCodingJudge** is structured to ensure scalability, real-time communication, and secure code execution. The system is divided into multiple services:
+
+- **Frontend**: Manages user interaction and sends requests to the backend.
+- **API Server**: Handles authentication, problem management, and solution evaluation.
+- **Worker Service**: Processes code submissions securely using containers.
+- **Chatbot Service**: Provides AI-assisted coding help using OpenAI's API.
+- **WebSocket Server**: Enables real-time feedback and coding sessions.
+
+Refer to the following image for a visual representation of the system design:
+
+![System Architecture](./design.png)
+
 ## Tech Stack
 
 - **Frontend**: React.js
