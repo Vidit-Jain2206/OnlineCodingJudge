@@ -1,4 +1,4 @@
-import { redisConfig } from "../../../shared/config/redis.config";
+import { redisConfig } from "../config/redis.config";
 import { Queue } from "bullmq";
 
 export class QueueService {

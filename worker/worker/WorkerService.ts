@@ -1,5 +1,5 @@
 import { SubmissionStatus } from "../../shared/entity/Submission";
-import { SubmissionService } from "../../api-server/src/service/SubmissionService";
+import { SubmissionService } from "../../shared/service/SubmissionService";
 import { Worker } from "bullmq";
 import Docker from "dockerode";
 import { redisConfig } from "../../shared/config/redis.config";

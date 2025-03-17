@@ -1,9 +1,8 @@
 import { RequestHandler, Request, Response } from "express";
 import { CreateSubmissionDto } from "../../../shared/dtos/SubmissionDto";
-import { SubmissionService } from "../service/SubmissionService";
-import { QueueService } from "../service/QueueService";
-import { AWSUploadService } from "../service/AWSUploadServive";
-
+import { SubmissionService } from "../../../shared/service/SubmissionService";
+import { QueueService } from "../../../shared/service/QueueService";
+import { AWSUploadService } from "../../../shared/service/AWSUploadServive";
 export class SubmissionController {
   constructor(
     private submissionService: SubmissionService,
@@ -30,8 +29,9 @@ export class SubmissionController {
       ) {
         throw new Error("Missing required fields");
       }
+
       // upload the submission's source code to aws s3
-      const submission = await this.submissionService.createSubmission({
+      const { submission } = await this.submissionService.createSubmission({
         questionId: submissionDto.questionId,
         code: submissionDto.code,
         language: submissionDto.language,
@@ -44,13 +44,14 @@ export class SubmissionController {
 
       await this.awsUploadService.uploadFile(
         submissionDto.code,
-        submission.submission.getId()
+        submission.getId()
       );
 
       await this.queueService.addJob("submission", {
         questionId: submissionDto.questionId,
-        id: submission.submission.getId(),
+        id: submission.getId(),
       });
+      console.log("Submission created and job added to queue");
       res.status(201).json(submission);
       return;
     } catch (error) {

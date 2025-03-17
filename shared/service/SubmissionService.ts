@@ -3,9 +3,9 @@ import {
   CreateSubmissionDto,
   SubmissionResponseDto,
   UpdateSubmissionDto,
-} from "../../../shared/dtos/SubmissionDto";
-import { Submission } from "../../../shared/entity/Submission";
-import { ISubmissionRepository } from "../../../shared/repository/ISubmissionRepository";
+} from "../dtos/SubmissionDto";
+import { Submission } from "../entity/Submission";
+import { ISubmissionRepository } from "../repository/ISubmissionRepository";
 
 export class SubmissionService {
   constructor(private submissionRepository: ISubmissionRepository) {}
@@ -20,6 +20,7 @@ export class SubmissionService {
         submissionDto.language,
         submissionDto.expectedOutput
       );
+
       const savedSubmission = await this.submissionRepository.saveSubmission(
         submission
       );
@@ -27,7 +28,6 @@ export class SubmissionService {
         throw new Error("Failed to create submission");
       }
 
-      console.log("Submission created and job added to queue");
       return {
         submission: savedSubmission,
       };

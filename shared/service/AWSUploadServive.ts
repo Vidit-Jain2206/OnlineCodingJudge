@@ -1,4 +1,9 @@
-import { PutBucketAclCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  PutBucketAclCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
+import { cosineDistance } from "drizzle-orm";
 
 export class AWSUploadService {
   private client: S3Client;
@@ -28,9 +33,11 @@ export class AWSUploadService {
         Body: file,
         ContentType: "text/plain",
       };
-      const command = new PutBucketAclCommand(params);
+      const command = new PutObjectCommand(params);
       await this.client.send(command);
+      console.log("uploaded upload file to s3");
     } catch (error) {
+      console.error("Error uploading file to S3:", error);
       throw new Error((error as Error).message);
     }
   }
