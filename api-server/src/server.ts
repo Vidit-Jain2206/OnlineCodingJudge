@@ -6,17 +6,27 @@ import express from "express";
 import { db } from "./config/database.config";
 import { QueueService } from "./service/QueueService";
 import cors from "cors";
+import { AWSUploadService } from "./service/AWSUploadServive";
 
 dotenv.config();
-
+const accessKeyId: string = process.env.AWS_ACCESS_KEY_ID || "";
+const secretAccessKey: string = process.env.AWS_SECRET_ACCESS_KEY || "";
+const region: string = process.env.AWS_REGION || "";
+const bucketName: string = process.env.AWS_BUCKET_NAME || "";
 const submissionRepository = new SubmissionRepositoryImp(db);
 const queueService = new QueueService();
-const submissionService = new SubmissionService(
-  submissionRepository,
-  queueService
+const submissionService = new SubmissionService(submissionRepository);
+const awsUploadService = new AWSUploadService(
+  accessKeyId,
+  secretAccessKey,
+  region,
+  bucketName
 );
-
-const submissionController = new SubmissionController(submissionService);
+const submissionController = new SubmissionController(
+  submissionService,
+  queueService,
+  awsUploadService
+);
 
 const app = express();
 
