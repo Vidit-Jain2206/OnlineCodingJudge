@@ -10,7 +10,7 @@ const ChatBox = ({ code, language, setChatBoxExpanded }) => {
   useEffect(() => {
     async function initialiseChat() {
       const { data } = await axios.post(
-        "/http://localhost:8080/initialise_chat",
+        "http://localhost:8080/initialise_chat",
         {
           context: {
             problemStatement: problem.description,

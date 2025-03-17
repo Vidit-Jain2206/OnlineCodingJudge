@@ -1,12 +1,15 @@
 import express from "express";
 import { SYSTEM_PROMPT } from "./utils/systemPrompt";
 import { client, createAssistant } from "./config/openaiclient";
+import cors from "cors";
 const app = express();
 
 let assistantId: string = "";
 createAssistant().then((id) => {
   assistantId = id;
 });
+
+app.use(cors());
 
 app.post("/chat", async (req, res) => {
   try {
