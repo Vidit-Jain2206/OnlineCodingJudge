@@ -9,6 +9,7 @@
     "build": "tsc -b"
   },
   "dependencies": {
+    "@aws-sdk/client-ecs": "^3.766.0",
     "bullmq": "^5.1.1",
     "ioredis": "^5.5.0"
   },
